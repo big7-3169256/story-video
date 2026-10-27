@@ -13,7 +13,7 @@ permissions:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +25,9 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y ffmpeg fonts-dejavu-core
-          pip install edge-tts
+          pip install edge-tts opencv-python-headless numpy pillow
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers
 
       - name: Write story.json
         env:
@@ -33,6 +35,10 @@ jobs:
         run: echo "$STORY_B64" | base64 -d > story.json
 
       - name: Render
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          PARALLAX: "1"
         run: python render.py
 
       - name: Publish video as release asset
